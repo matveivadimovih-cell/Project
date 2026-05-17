@@ -102,6 +102,9 @@ class Market
             const options = this.allStocks.get(symbol)?.options || {};
 
             const generator = simPrice(symbol, price, options);
+            
+            const firstTick = generator.next().value;
+            this._updatePrice(firstTick); 
 
             const intervalId = setInterval(() => {
                 const tick = generator.next().value;
@@ -119,7 +122,7 @@ class Market
     {
         this.stop();
         this.currentPrices.clear();
-        this.allStocks = new Map();
+        this.allStocks.clear();
         this.emitter.emit("marketReset", null);
         console.log("Market reset");
     }

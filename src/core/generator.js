@@ -17,7 +17,8 @@ export function* simPrice(symbol, initPrice, options = {})
         if(currPrice > max)
         {
             delta = -Math.abs(delta) * 1.5;
-        } else if(currPrice < min)
+        } 
+        else if(currPrice < min)
         {
             delta = Math.abs(delta) * 1.5;
         }
@@ -28,10 +29,10 @@ export function* simPrice(symbol, initPrice, options = {})
 
         currPrice = Math.max(0.01, currPrice + delta);
 
-        yield ({
+        yield {
             symbol: symbol,
             price: Math.round(currPrice * 100) / 100,
             timestamp: Date.now()
-        });
+        };
     }
 }
