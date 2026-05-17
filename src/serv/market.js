@@ -9,14 +9,14 @@ class Market
         this.currentPrices = new Map();
         this.intervals = new Map();
         this.tickInterval = 1000;
-        this.allStocks = [];
+        this.allStocks = new Map();
     }
 
     start(tickInterval = 1000)
     {
         this.tickInterval = tickInterval;
 
-        if(this.allStocks.length === 0)
+        if(this.allStocks.size === 0)
         {
             this.addStock("AAA", 150, { volatility: 0.05 });
             this.addStock("BBB", 2800, { volatility: 0.07 });
@@ -36,7 +36,7 @@ class Market
             return;
         }
 
-        this.allStocks.push({ symbol, price: initPrice, options });
+        this.allStocks.set(symbol, { symbol, price: initPrice, options });
 
         const generator = simPrice(symbol, initPrice, options);
 
@@ -64,7 +64,7 @@ class Market
         clearInterval(this.intervals.get(symbol));
         this.intervals.delete(symbol);
         this.currentPrices.delete(symbol);
-        this.allStocks = this.allStocks.filter(s => s.symbol !== symbol);
+        this.allStocks.delete(symbol);
 
         this.emitter.emit("stockRemoved", symbol);
     }
@@ -99,7 +99,7 @@ class Market
         }
 
         this.currentPrices.forEach((price, symbol) => {
-            const options = this.allStocks.find(s => s.symbol === symbol)?.options || {};
+            const options = this.allStocks.get(symbol)?.options || {};
 
             const generator = simPrice(symbol, price, options);
 
@@ -119,7 +119,7 @@ class Market
     {
         this.stop();
         this.currentPrices.clear();
-        this.allStocks = [];
+        this.allStocks = new Map();
         this.emitter.emit("marketReset", null);
         console.log("Market reset");
     }
