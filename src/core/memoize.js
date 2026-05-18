@@ -1,7 +1,7 @@
 const argKey = (x) => String(x)+':'+typeof x;
 const generateKey = (args) => args.map(argKey).join('|');
 
-export function memo(fn, maxSize = Infinity, evict = null)
+export function memo(fn, maxSize = 500, evict = null)
 {
     const cache = new Map();
 
@@ -11,6 +11,7 @@ export function memo(fn, maxSize = Infinity, evict = null)
 
         if(cache.has(key))
         {
+            console.log(`Cache hit for key: ${key}`);
             const entry = cache.get(key);
             entry.count++;
             cache.delete(key);

@@ -38,7 +38,9 @@ export default function StockCard({ symbol })
         <div style = { { border: "1px solid #ccc", padding: "10px", margin: "10px", width: "150px", textAlign: "center" } }>
             <h3>{symbol}</h3>
             <p style={{color, fontWeight: 'bold', fontSize: '1.2rem' }}>
-                ${(price === null ? '---' : price.toFixed(2))}</p>
+                ${(price === null ? '---' : price.toFixed(2))}
+            </p>
+            
         </div>
     );
 }
