@@ -84,6 +84,8 @@ class Market
             bids: orderBook.getAllBids(),
             asks: orderBook.getAllAsks()
         });
+
+        this._tryMatchOrder(symbol);
     }
 
     removeStock(symbol)
@@ -125,9 +127,34 @@ class Market
         return orderCancelled;
     }
 
+    _tryMatchOrder(symbol)
+    {
+        const orderBook = this.orderBooks.get(symbol);
+        const currentPrice = this.currentPrices.get(symbol);
+        if(!orderBook || !currentPrice)
+        {
+            console.warn(`Stock ${symbol} doesn't exist`);
+            return;
+        }
+
+        while(orderBook.peekBestBid() && orderBook.peekBestBid().price >= currentPrice)
+        {
+            const executedBid = orderBook.extractBestBid();
+            this.emitter.emit("orderExecuted", { symbol, order: executedBid, marketPrice: currentPrice });
+        }
+
+        while(orderBook.peekBestAsk() && orderBook.peekBestAsk().price <= currentPrice)
+        {
+            const executedAsk = orderBook.extractBestAsk();
+            this.emitter.emit("orderExecuted", { symbol, order: executedAsk, marketPrice: currentPrice });
+        }
+    }
+
     _updatePrice(tickResults)
     {
         this.currentPrices.set(tickResults.symbol, tickResults.price);
+
+        this._tryMatchOrder(tickResults.symbol);
         this.emitter.emit("priceUpdate", tickResults);
         this.emitter.emit(`priceUpdate:${tickResults.symbol}`, tickResults);
     }
