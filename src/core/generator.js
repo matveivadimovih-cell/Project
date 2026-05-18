@@ -1,6 +1,14 @@
-export function* simPrice(symbol, initPrice, options = {})
+export function* simPrice(symbol, initPrice, options = {}, prevPrice = null)
 {
-    let currPrice = initPrice;
+    let currPrice;
+    if(prevPrice !== null)
+    {
+        currPrice = prevPrice;
+    }
+    else
+    {
+        currPrice = initPrice;
+    }
 
     const
     {

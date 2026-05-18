@@ -78,16 +78,18 @@ export class OrderBook
         this.idCounter = 0;
     }
 
-    addBids(price, amount)
+    addBid(price, amount)
     {
         const id = this.idCounter++;
         this.bids.enqueue(id, price, amount);
+        return id;
     }
 
-    addAsks(price, amount)
+    addAsk(price, amount)
     {
         const id = this.idCounter++;
         this.asks.enqueue(id, price, amount);
+        return id;
     }
 
     peekBestBid()

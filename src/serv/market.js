@@ -71,13 +71,15 @@ class Market
             console.warn(`Use buy or sell.`);
             return;
         }
-        else if(orderType === "buy")
+
+        let orderId;
+        if(orderType === "buy")
         {
-            orderBook.addBids(price, amount);
+            orderId = orderBook.addBid(price, amount);
         }
         else
         {
-            orderBook.addAsks(price, amount);
+            orderId = orderBook.addAsk(price, amount);
         }
 
         this.emitter.emit("orderAdded", { symbol,
@@ -186,10 +188,9 @@ class Market
         this.currentPrices.forEach((price, symbol) => {
             const options = this.allStocks.get(symbol)?.options || {};
 
-            const generator = simPrice(symbol, price, options);
-            
-            const firstTick = generator.next().value;
-            this._updatePrice(firstTick); 
+            const initPrice = this.allStocks.get(symbol)?.price || price;
+
+            const generator = simPrice(symbol, initPrice, options, price);
 
             const intervalId = setInterval(() => {
                 const tick = generator.next().value;
