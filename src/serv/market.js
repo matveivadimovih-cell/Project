@@ -57,6 +57,35 @@ class Market
         this.emitter.emit("stockAdded", firstTick);
     }
 
+    addOrder(symbol, price, amount, orderType)
+    {
+        const orderBook = this.orderBooks.get(symbol);
+        if(!orderBook)
+        {
+            console.warn(`Stock ${symbol} doesn't exist`);
+            return;
+        }
+
+        if(orderType !== "buy" && orderType !== "sell")
+        {
+            console.warn(`Use buy or sell.`);
+            return;
+        }
+        else if(orderType === "buy")
+        {
+            orderBook.addBids(price, amount);
+        }
+        else
+        {
+            orderBook.addAsks(price, amount);
+        }
+
+        this.emitter.emit("orderAdded", { symbol,
+            bids: orderBook.getAllBids(),
+            asks: orderBook.getAllAsks()
+        });
+    }
+
     removeStock(symbol)
     {
         if(!this.intervals.has(symbol))
@@ -73,6 +102,27 @@ class Market
         this.orderBooks.delete(symbol);
 
         this.emitter.emit("stockRemoved", symbol);
+    }
+
+    removeOrder(symbol, orderId)
+    {
+        const orderBook = this.orderBooks.get(symbol);
+        if(!orderBook)
+        {
+            console.warn(`Order ${orderId} for ${symbol} doesn't exist`);
+            return;
+        }
+
+        const orderCancelled = orderBook.cancelOrder(orderId);
+        if(orderCancelled)
+        {
+            this.emitter.emit("orderCancelled", { symbol, 
+                bids: orderBook.getAllBids(),
+                asks: orderBook.getAllAsks()
+             });
+        }
+
+        return orderCancelled;
     }
 
     _updatePrice(tickResults)
