@@ -16,6 +16,37 @@ export class ApiService
         this._subscribeMarketEvents()
     }
 
+    _subscribeMarketEvents()
+    {
+        market.emitter.on("orderExecuted", (data) => {
+            this._handleOrderExecuted(data);
+        })
+    }
+
+    _handleOrderExecuted({ symbol, order, marketPrice })
+    {
+        const myOrder = this.activeOrders.get(order.id);
+
+        if(!myOrder)
+        {
+            return;
+        }
+
+        if(myOrder.orderType === "buy")
+        {
+            const currentAmount = this.userPortfolio.get(symbol) || 0;
+            this.userPortfolio.set(symbol, myOrder.amount + currentAmount);
+        }
+        else if(myOrder.orderType === "sell")
+        {
+            this.userBalance += order.amount * marketPrice;
+        }
+
+        this.activeOrders.delete(order.id);
+
+        market.emitter.emit("portfolioUpdated", this.getPortfolioSync());
+    }
+
     async login(username, password)
     {
         await delay(200);
@@ -48,6 +79,20 @@ export class ApiService
         return market.getPrice(symbol);
     }
 
+    getPortfolioSync()
+    {
+        return {
+            balance: this.userBalance,
+            portfolio: this.userPortfolio
+        };
+    }
+
+    async getPortfolio()
+    {
+        await delay(50);
+        return this.getPortfolioSync();
+    }
+
     async getAllMarketPrices() 
     {
         await delay(50);
@@ -55,5 +100,19 @@ export class ApiService
         return market.getAllPrices();
     }
 
+    async executeMarketOrder()
+    {
+
+    }
+
+    async placeLimitOrder()
+    {
+        
+    }
+
+    async cancelLimitOrder()
+    {
+        
+    }
 
 }
