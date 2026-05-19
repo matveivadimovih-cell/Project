@@ -147,7 +147,7 @@ export class ApiService
             if(this.userBalance < totalCost) throw new Error("you don't have money");
             this.userBalance -= totalCost;
         }
-        else if(orderType == "sell")
+        else if(orderType === "sell")
         {
             const ownedAmount = this.userPortfolio.get(symbol) || 0;
             if(ownedAmount < amount) throw new Error("you don't such amount");
