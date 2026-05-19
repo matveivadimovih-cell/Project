@@ -5,21 +5,38 @@ const LOG_LEVELS = {
     ERROR: 3
 };
 
-async function withLogging(fn) 
+let assignedLogLevel = LOG_LEVELS.INFO;
+
+export function setLogLevel(level)
 {
-    return async function(...args)
+    assignedLogLevel = LOG_LEVELS[level] || LOG_LEVELS.INFO;
+}
+
+
+async function withLogging(logLevel = 'INFO') 
+{
+    const currentLogLevel = LOG_LEVELS[logLevel] || LOG_LEVELS.INFO;
+    return function(fn)
     {
-         console.log(`Calling ${fn.name} with arguments: ${JSON.stringify(args)}`);
-         try
-         {
-                const result = await fn(...args);
-                console.log(`Result from ${fn.name}: ${JSON.stringify(result)}`);
-                return result;
-         }
-        catch(error)
+        return async function(...args)
         {
-                console.error(`Error in ${fn.name}: ${error.message}`);
-                throw error;
+            if(currentLogLevel < assignedLogLevel)
+            {
+                const result = await fn(...args);
+                return result;
+            }
+            console.log(`Calling ${fn.name} with arguments: ${JSON.stringify(args)}`);
+            try
+            {
+                    const result = await fn(...args);
+                    console.log(`Result from ${fn.name}: ${JSON.stringify(result)}`);
+                    return result;
+            }
+            catch(error)
+            {
+                    console.error(`Error in ${fn.name}: ${error.message}`);
+                    throw error;
+            }
         }
     }
 
