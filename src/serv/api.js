@@ -13,7 +13,7 @@ export class ApiService
 
         this.activeOrders = new Map();
 
-        this._subscribeMarketEvents()
+        this._subscribeMarketEvents();
     }
 
     _subscribeMarketEvents()
@@ -79,6 +79,13 @@ export class ApiService
         return market.getPrice(symbol);
     }
 
+    async getAllMarketPrices() 
+    {
+        await delay(50);
+
+        return market.getAllPrices();
+    }
+
     getPortfolioSync()
     {
         return {
@@ -93,16 +100,38 @@ export class ApiService
         return this.getPortfolioSync();
     }
 
-    async getAllMarketPrices() 
+    async executeMarketOrder(symbol, amount, orderType)
     {
-        await delay(50);
+        await delay(300);
 
-        return market.getAllPrices();
-    }
+        const currentPrice = market.getPrice(symbol);
+        if(!currentPrice) throw new Error(`${symbol} not found`);
 
-    async executeMarketOrder()
-    {
+        const totalCost = amount * currentPrice;
+        if(orderType === "buy")
+        {
+            if(this.userBalance < totalCost) throw new Error("you don't have money");
+            this.userBalance -= totalCost;
+            this.userPortfolio.set(symbol, (this.userPortfolio.get(symbol) || 0) + amount);
+        }
+        else if(orderType === "sell")
+        {
+            const ownedAmount = this.userPortfolio.get(symbol) || 0;
+            if(ownedAmount < amount) throw new Error("you don't such amount");
 
+            this.userBalance += totalCost;
+            if(this.userPortfolio.get(symbol) === amount) 
+            {
+                this.userPortfolio.delete(symbol);
+            }
+            else 
+            {
+                this.userPortfolio.set(symbol, ownedAmount - amount);
+            }
+        }
+
+        market.emitter.emit("portfolioUpdated", (this.getPortfolioSync()));
+        return {success: true, message: `${orderType} executed`};
     }
 
     async placeLimitOrder()
@@ -112,7 +141,7 @@ export class ApiService
 
     async cancelLimitOrder()
     {
-        
+
     }
 
 }
