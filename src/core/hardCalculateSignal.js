@@ -1,4 +1,5 @@
 import { memo } from './memoize.js';
+import { logging } from './decorators.js';
 
 function _hardCalculateSignal(currentPrice, initialPrice, volatility)
 {

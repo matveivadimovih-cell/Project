@@ -9,6 +9,7 @@ const LOG_LEVELS = {
 
 let assignedLogLevel = LOG_LEVELS.INFO;
 let logStorage = [];
+
 const MAX_LOG_STORAGE = 1000;
 
 export const loggerEmitter = new EventEmitter();
