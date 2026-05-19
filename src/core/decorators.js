@@ -15,7 +15,7 @@ export const loggerEmitter = new EventEmitter();
 
 function emitAndAddLog(logEntry)
 {
-    if (logStorage.length > MAX_LOG_STORAGE)
+    if (logStorage.length >= MAX_LOG_STORAGE)
     {
         logStorage.shift();
     }
@@ -32,7 +32,7 @@ export function setLogLevel(level)
 
 export function getLogs()
 {
-    return logStorage;
+    return [...logStorage];
 }
 
 function stringifyArg(arg)
@@ -62,10 +62,12 @@ export function Logging(logLevel = 'INFO')
 
             const timestamp = new Date().toISOString();
             const starttime = Date.now();
+            const fnName = fn.name || 'anonymous';
             
             try
             {
                 const result = fn.apply(this, args);
+
                 if(result instanceof Promise)
                 {
                     result.then(asyncResult => {
@@ -73,21 +75,19 @@ export function Logging(logLevel = 'INFO')
 
                         if(logLevel != 'ERROR')
                         {
-                            const successMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
-                            emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result: asyncResult, message: successMessage });
+                            const successMessage = `[${timestamp}] [${logLevel}] [${fnName}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
+                            emitAndAddLog({ timestamp, logLevel, functionName: fnName, timeTaken, result: asyncResult, message: successMessage });
                         }
-
-                        return asyncResult;
                     })
                     .catch(error => {
                         const timeTaken = Date.now() - starttime;
-                        const errorMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Failed in ${timeTaken}ms with error: ${error.message}`;
+                        const errorMessage = `[${timestamp}] [${logLevel}] [${fnName}] Failed in ${timeTaken}ms with error: ${error.message}`;
 
-                        emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result: null, message: errorMessage });
+                        emitAndAddLog({ timestamp, logLevel, functionName: fnName, timeTaken, result: null, message: errorMessage });
 
                         console.error(errorMessage);
-                        throw error;
                     });
+                    return result;
                 }
                 else
                 {
@@ -95,8 +95,8 @@ export function Logging(logLevel = 'INFO')
 
                     if(logLevel != 'ERROR')
                     {
-                        const successMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
-                        emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result, message: successMessage });
+                        const successMessage = `[${timestamp}] [${logLevel}] [${fnName}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
+                        emitAndAddLog({ timestamp, logLevel, functionName: fnName, timeTaken, result, message: successMessage });
                     }
 
                     return result;
@@ -105,9 +105,9 @@ export function Logging(logLevel = 'INFO')
             catch(error)
             {
                 const timeTaken = Date.now() - starttime;
-                const errorMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Failed in ${timeTaken}ms with error: ${error.message}`;
+                const errorMessage = `[${timestamp}] [${logLevel}] [${fnName}] Failed in ${timeTaken}ms with error: ${error.message}`;
 
-                emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result: null, message: errorMessage });
+                emitAndAddLog({ timestamp, logLevel, functionName: fnName, timeTaken, result: null, message: errorMessage });
 
                 console.error(errorMessage);
                 throw error;
