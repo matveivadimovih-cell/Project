@@ -7,7 +7,7 @@ const callTime = new Map();
 export function apiSecure()
 {
     const proxyConfig = {
-        authStrategy: "JWT", // OAuth, API_Key, JWT
+        authStrategy: "JWT", // OAuth, API_KEY, JWT
         rateLimitPerSecond: 5,
         apiKey: null,
     }
@@ -50,7 +50,7 @@ export function apiSecure()
                     {
                         isAuth = target.isAuthorized();
                     }
-                    else if(proxyConfig.authStrategy === "API_Key")
+                    else if(proxyConfig.authStrategy === "API_KEY")
                     {
                         isAuth = proxyConfig.apiKey === "good_key_1";
                     }
@@ -60,10 +60,25 @@ export function apiSecure()
                         throw new Error("Unauthorized");
                     }
                 }
+
+                if(proxyConfig.authStrategy === "API_KEY" && PRIVATE_METHODS.includes(prop))
+                {
+                    args.unshift({'x-api-key': proxyConfig.apiKey});
+                }
+
+                return value.apply(target, args);
             }
         }
     }
 
     const apiProxy = new Proxy(apiService, handler);
 
+    return {
+        api: apiProxy,
+        setAuthStrategy: (strategy) => { proxyConfig.authStrategy = strategy; },
+        setApiKey: (key) => { proxyConfig.apiKey = key; }
+    }
 }
+
+export const secureApi = apiSecure();
+
