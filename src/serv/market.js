@@ -2,6 +2,7 @@ import { EventEmitter } from "../core/eventEmitter.js";
 import { simPrice } from "../core/generator.js";
 import { hardCalculateSignal } from "../core/hardCalculateSignal.js";
 import { OrderBook } from "../core/priorityQueue.js";
+import { logging, logWarn, logInfo } from "../core/decorators.js";
 
 class Market
 {
@@ -19,7 +20,7 @@ class Market
     {
         if(this.intervals.size > 0)
         {
-            console.warn("Market is already running");
+            logWarn("Market is already running");
             return;
         }
         
@@ -41,7 +42,7 @@ class Market
     {
         if(this.intervals.has(symbol))
         {
-            console.warn(`${symbol} exists`);
+            logWarn(`${symbol} exists`);
             return;
         }
 
@@ -69,13 +70,13 @@ class Market
         const orderBook = this.orderBooks.get(symbol);
         if(!orderBook)
         {
-            console.warn(`Stock ${symbol} doesn't exist`);
+            logWarn(`Stock ${symbol} doesn't exist`);
             return;
         }
 
         if(orderType !== "buy" && orderType !== "sell")
         {
-            console.warn(`Use buy or sell.`);
+            logWarn(`Use buy or sell.`);
             return;
         }
 
@@ -103,7 +104,7 @@ class Market
     {
         if(!this.intervals.has(symbol))
         {
-            console.warn(`${symbol} doesn't exist`);
+            logWarn(`${symbol} doesn't exist`);
             return; 
         }
 
@@ -122,7 +123,7 @@ class Market
         const orderBook = this.orderBooks.get(symbol);
         if(!orderBook)
         {
-            console.warn(`Order ${orderId} for ${symbol} doesn't exist`);
+            logWarn(`Order ${orderId} for ${symbol} doesn't exist`);
             return;
         }
 
@@ -144,7 +145,7 @@ class Market
         const currentPrice = this.currentPrices.get(symbol);
         if(!orderBook || !currentPrice)
         {
-            console.warn(`Stock ${symbol} doesn't exist`);
+            logWarn(`Stock ${symbol} doesn't exist`);
             return;
         }
 
@@ -180,21 +181,21 @@ class Market
     {
         if(this.intervals.size === 0)
         {
-            console.log("Market is already stopped");
+            logInfo("Market is already stopped");
             return;
         }
 
         this.intervals.forEach((intervalId) => clearInterval(intervalId));
         this.intervals.clear();
         this.emitter.emit("marketStopped", null);
-        console.log("Market stopped");
+        logInfo("Market stopped");
     }
 
     _resume()
     {
         if(this.intervals.size > 0)
         {
-            console.warn("Market is already running");
+            logWarn("Market is already running");
             return;
         }
 
@@ -214,7 +215,7 @@ class Market
         });
 
         this.emitter.emit("marketResumed", null);
-        console.log("Market resumed");
+        logInfo("Market resumed");
     }
 
     reset()
@@ -223,7 +224,7 @@ class Market
         this.currentPrices.clear();
         this.allStocks.clear();
         this.emitter.emit("marketReset", null);
-        console.log("Market reset");
+        logInfo("Market reset");
     }
 
     getPrice(symbol)
@@ -240,5 +241,15 @@ class Market
         return prices;
     }
 }
+
+Market.prototype.addOrder = logging('INFO')(Market.prototype.addOrder);
+Market.prototype.removeOrder = logging('INFO')(Market.prototype.removeOrder);
+Market.prototype.addStock = logging('INFO')(Market.prototype.addStock);
+Market.prototype.removeStock = logging('INFO')(Market.prototype.removeStock);
+Market.prototype.start = logging('INFO')(Market.prototype.start);
+Market.prototype.stop = logging('INFO')(Market.prototype.stop);
+Market.prototype.reset = logging('INFO')(Market.prototype.reset);
+Market.prototype._updatePrice = logging('DEBUG')(Market.prototype._updatePrice);
+Market.prototype._tryMatchOrder = logging('DEBUG')(Market.prototype._tryMatchOrder);
 
 export const market = new Market();

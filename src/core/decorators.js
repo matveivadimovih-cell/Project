@@ -47,7 +47,37 @@ function stringifyArg(arg)
     }
 }
 
-export function Logging(logLevel = 'INFO') 
+export function logWarn(message, data = {})
+{
+    if(LOG_LEVELS.WARN < assignedLogLevel)
+    {
+        return;
+    }
+    const timestamp = new Date().toISOString();
+    emitAndAddLog({ timestamp, logLevel: 'WARN', functionName: '', timeTaken: 0, result: null, message, ...data });
+}
+
+export function logInfo(message, data = {})
+{
+    if(LOG_LEVELS.INFO < assignedLogLevel)
+    {
+        return;
+    }
+    const timestamp = new Date().toISOString();
+    emitAndAddLog({ timestamp, logLevel: 'INFO', functionName: '', timeTaken: 0, result: null, message, ...data });
+}
+
+export function logError(message, data = {})
+{
+    if(LOG_LEVELS.ERROR < assignedLogLevel)
+    {
+        return;
+    }
+    const timestamp = new Date().toISOString();
+    emitAndAddLog({ timestamp, logLevel: 'ERROR', functionName: '', timeTaken: 0, result: null, message, ...data });
+}
+
+export function logging(logLevel = 'INFO') 
 {
     const currentLogLevel = LOG_LEVELS[logLevel] || LOG_LEVELS.INFO;
     return function(fn)
@@ -105,9 +135,10 @@ export function Logging(logLevel = 'INFO')
             catch(error)
             {
                 const timeTaken = Date.now() - starttime;
+                const errorLogLevel = 'ERROR';
                 const errorMessage = `[${timestamp}] [${logLevel}] [${fnName}] Failed in ${timeTaken}ms with error: ${error.message}`;
 
-                emitAndAddLog({ timestamp, logLevel, functionName: fnName, timeTaken, result: null, message: errorMessage });
+                emitAndAddLog({ timestamp, errorLogLevel, functionName: fnName, timeTaken, result: null, message: errorMessage });
 
                 console.error(errorMessage);
                 throw error;

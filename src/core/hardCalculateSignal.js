@@ -18,4 +18,6 @@ function _hardCalculateSignal(currentPrice, initialPrice, volatility)
     return { signal, changePercent: changePercent.toFixed(2) };
 }
 
-export const hardCalculateSignal = memo(_hardCalculateSignal, 100);
+const memoHardCalculateSignal = memo(_hardCalculateSignal, 100);
+
+export const hardCalculateSignal = logging('DEBUG')(memoHardCalculateSignal);
