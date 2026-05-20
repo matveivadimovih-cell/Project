@@ -14,6 +14,7 @@ class Market
         this.tickInterval = 1000;
         this.allStocks = new Map();
         this.orderBooks = new Map();
+        this.globalOrderIdCounter = 0;
     }
 
     start(tickInterval = 1000)
@@ -80,20 +81,18 @@ class Market
             return;
         }
 
-        let orderId;
+        let orderId = this.globalOrderIdCounter++;
+        let newOrder;
         if(orderType === "buy")
         {
-            orderId = orderBook.addBid(price, amount);
+            newOrder = orderBook.addBid(orderId, price, amount);
         }
         else
         {
-            orderId = orderBook.addAsk(price, amount);
+            newOrder = orderBook.addAsk(orderId, price, amount);
         }
 
-        this.emitter.emit("orderAdded", { symbol,
-            bids: orderBook.getAllBids(),
-            asks: orderBook.getAllAsks()
-        });
+        this.emitter.emit("orderAdded", { symbol, order: newOrder });
 
         this._tryMatchOrder(symbol);
 

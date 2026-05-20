@@ -33,6 +33,8 @@ class PriorityQueue
         {
             this.elements.push(element);
         }
+
+        return element;
     }
 
     dequeue()
@@ -75,21 +77,18 @@ export class OrderBook
     {
         this.bids = new PriorityQueue("Bids");
         this.asks = new PriorityQueue("Asks");
-        this.idCounter = 0;
     }
 
-    addBid(price, amount)
+    addBid(id, price, amount)
     {
-        const id = this.idCounter++;
-        this.bids.enqueue(id, price, amount);
-        return id;
+        const newBid = this.bids.enqueue(id, price, amount);
+        return newBid;
     }
 
-    addAsk(price, amount)
+    addAsk(id, price, amount)
     {
-        const id = this.idCounter++;
-        this.asks.enqueue(id, price, amount);
-        return id;
+        const newAsk = this.asks.enqueue(id, price, amount);
+        return newAsk;
     }
 
     peekBestBid()

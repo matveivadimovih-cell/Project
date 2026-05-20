@@ -19,6 +19,17 @@ export class ApiService
 
     _subscribeMarketEvents()
     {
+        market.emitter.on("orderAdded", (data) => {
+            const { symbol, order } = data;
+            const orderType = order.type === 'Bids' ? 'buy' : 'sell';
+            this.activeOrders.set(order.id, { 
+                symbol, 
+                price: order.price, 
+                amount: order.amount, 
+                orderType 
+            });
+        });
+
         market.emitter.on("orderExecuted", (data) => {
             this._handleOrderExecuted(data);
         })
@@ -26,24 +37,28 @@ export class ApiService
 
     _handleOrderExecuted({ symbol, order, marketPrice })
     {
-        const myOrder = this.activeOrders.get(order.id);
+        const orderType = order.type === 'Bids' ? 'buy' : 'sell';
 
+        const myOrder = this.activeOrders.get(order.id);
         if(!myOrder)
         {
             return;
         }
 
-        if(myOrder.orderType === "buy")
+        if(orderType === "buy")
         {
             const currentAmount = this.userPortfolio.get(symbol) || 0;
             this.userPortfolio.set(symbol, myOrder.amount + currentAmount);
         }
-        else if(myOrder.orderType === "sell")
+        else if(orderType === "sell")
         {
             this.userBalance += order.amount * marketPrice;
         }
 
-        this.activeOrders.delete(order.id);
+        if(this.activeOrders.has(order.id)) 
+        {
+            this.activeOrders.delete(order.id);
+        }
 
         market.emitter.emit("portfolioUpdated", this.getPortfolioSync());
     }
@@ -92,7 +107,8 @@ export class ApiService
     {
         return {
             balance: this.userBalance,
-            portfolio: new Map(this.userPortfolio)
+            portfolio: this.userPortfolio, 
+            activeOrders: this.getActiveOrdersSync()
         };
     }
 
@@ -171,7 +187,9 @@ export class ApiService
         }
 
         const orderId = market.addOrder(symbol, price, amount, orderType);
-        this.activeOrders.set(orderId, { symbol, price, amount, orderType });
+
+        market.emitter.emit("portfolioUpdated", this.getPortfolioSync());
+
         return {success: true, orderId};
     }
 
@@ -180,12 +198,16 @@ export class ApiService
         await delay(150);
 
         const myOrder = this.activeOrders.get(orderId);
-        if(!myOrder) throw new Error("Order not found in myOrder");
+        if(!myOrder)
+        {
+            return {success: false, message: `Order ${orderId} already executed or cancelled`};
+        }
 
         const success = market.removeOrder(symbol, orderId);
         if(!success)
         {
-            throw new Error("Order not found in market")
+            this.activeOrders.delete(orderId);
+            return {success: true, message: `Order ${orderId} already executed or cancelled`};
         }
 
         const totalCost = myOrder.price * myOrder.amount;

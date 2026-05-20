@@ -22,7 +22,10 @@ export default function TradePanel()
         const updatePortfolio = (data) => {
             setBalance(data.balance);
             setPortfolio(Object.fromEntries(data.portfolio));
-            try { setActiveOrders(secureApi.api.getActiveOrdersSync() || []); } catch(e){}
+            if(data.activeOrders)
+            {
+                setActiveOrders(data.activeOrders);
+            }
         };
 
         try
@@ -32,7 +35,7 @@ export default function TradePanel()
             {
                 setBalance(initData.balance);
                 setPortfolio(Object.fromEntries(initData.portfolio));
-                setActiveOrders(secureApi.api.getActiveOrdersSync() || []);
+                setActiveOrders(initData.activeOrders || []);
             }
         }
         catch(e){}
