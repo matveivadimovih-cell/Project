@@ -102,6 +102,14 @@ export class ApiService
         return this.getPortfolioSync();
     }
 
+    getActiveOrdersSync()
+    {
+        return Array.from(this.activeOrders.entries()).map(([id, data]) => ({
+            id,
+            ...data
+        }));
+    }
+
     async executeMarketOrder(symbol, amount, orderType)
     {
         await delay(300);
