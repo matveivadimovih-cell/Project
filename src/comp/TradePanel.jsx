@@ -22,12 +22,18 @@ export default function TradePanel()
         const updatePortfolio = (data) => {
             setBalance(data.balance);
             setPortfolio(Object.fromEntries(data.portfolio));
+            try { setActiveOrders(secureApi.api.getActiveOrdersSync() || []); } catch(e){}
         };
 
         try
         {
             const initData = secureApi.api.getPortfolioSync();
-            updatePortfolio(initData);
+            if (initData) 
+            {
+                setBalance(initData.balance);
+                setPortfolio(Object.fromEntries(initData.portfolio));
+                setActiveOrders(secureApi.api.getActiveOrdersSync() || []);
+            }
         }
         catch(e){}
 
@@ -49,24 +55,40 @@ export default function TradePanel()
         {
             setError("");
             secureApi.setAuthStrategy("JWT");
+            setAuthStrategy("JWT");
             await secureApi.api.login("user", "123");
             setIsAuth(true);
             setSuccess("log JWT");
+
+            const data = secureApi.api.getPortfolioSync();
+            if(data) {
+                setBalance(data.balance);
+                setPortfolio(Object.fromEntries(data.portfolio));
+                setActiveOrders(secureApi.api.getActiveOrdersSync() || []);
+            }
         }
         catch(e)
         {
-            setError(e.massage);
+            setError(e.message);
         }
     };
 
     const handleLoginApiKey = async () => {
         setError("");
-        secureApi.setAuthStrategy("API_KEY")
+        secureApi.setAuthStrategy("API_KEY");
+        setAuthStrategy("API_KEY");
         if(apiKeyInput === "good_key_1")
         {
             secureApi.setApiKey(apiKeyInput);
             setIsAuth(true);
             setSuccess("log API Key");
+            const data = secureApi.api.getPortfolioSync();
+            if(data) 
+            {
+                setBalance(data.balance);
+                setPortfolio(Object.fromEntries(data.portfolio));
+                setActiveOrders(secureApi.api.getActiveOrdersSync() || [])
+            }
         }
         else
         {
@@ -97,7 +119,7 @@ export default function TradePanel()
         }
         catch(e)
         {
-            setError(e.massage);
+            setError(e.message);
         }
     };
 
@@ -109,7 +131,7 @@ export default function TradePanel()
             setSuccess(`Limit order placed! ID: ${res.orderId}`);
         } catch (e) 
         {
-            setError(e.massage);
+            setError(e.message);
         }
     }
 
@@ -122,9 +144,35 @@ export default function TradePanel()
             setActiveOrders(secureApi.api.getActiveOrdersSync());
         } catch (e) 
         {
-            setError(e.massage);
+            setError(e.message);
         }
     };
 
-    return
+    return(
+        <div style = {{border: "1px solid #333", padding: "20px", maxWidth: "400px", backgroundColor: "#f8f9fa"}}>
+            <h2> Trade Panel</h2>
+            {error && <div style={{ color: "white", backgroundColor: "red", padding: "5px", marginBottom: "10px" }}>{error}</div>}
+            {success && <div style={{ color: "white", backgroundColor: "green", padding: "5px", marginBottom: "10px" }}>{success}</div>}
+            <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                <p>Status: {isAuth ? `Authorized (${authStrategy})` : "Unauthorized"}</p>
+                {!isAuth ? (
+                        <>
+                            <button onClick={handleLoginJWT}>Login JWT</button>
+                            <div style={{ display: "flex" }}>
+                                <input 
+                                    placeholder="API Key" 
+                                    value={apiKeyInput} 
+                                    onChange={(e) => setApiKeyInput(e.target.value)} 
+                                    style={{ width: "100px" }}
+                                />
+                                <button onClick={handleLoginApiKey}>Login API</button>
+                            </div>
+                        </>
+                    ) : (
+                        <button onClick={handleLogout}>Logout</button>
+                    )}
+            </div>
+        </div>
+
+    )
 }
