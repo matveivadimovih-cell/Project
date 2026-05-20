@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { market } from "../serv/market";
 import StockCard from "./stockCard.jsx";
 import LogConsole from "./LogConsole.jsx";
+import TradePanel from "./TradePanel.jsx";
 
 export default function Dashboard()
 {
@@ -44,6 +45,7 @@ export default function Dashboard()
                 <StockCard symbol="BBB" />
                 <StockCard symbol="CCC" />
             </div>
+            <TradePanel/>
             <LogConsole/>
         </div>
     );

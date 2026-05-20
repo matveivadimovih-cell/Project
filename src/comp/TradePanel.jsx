@@ -149,30 +149,133 @@ export default function TradePanel()
     };
 
     return(
-        <div style = {{border: "1px solid #333", padding: "20px", maxWidth: "400px", backgroundColor: "#f8f9fa"}}>
+        <div style = {{border: "1px solid #333", padding: "20px", maxWidth: "400px", backgroundColor: "#1978d6"}}>
             <h2> Trade Panel</h2>
             {error && <div style={{ color: "white", backgroundColor: "red", padding: "5px", marginBottom: "10px" }}>{error}</div>}
             {success && <div style={{ color: "white", backgroundColor: "green", padding: "5px", marginBottom: "10px" }}>{success}</div>}
             <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
                 <p>Status: {isAuth ? `Authorized (${authStrategy})` : "Unauthorized"}</p>
-                {!isAuth ? (
-                        <>
-                            <button onClick={handleLoginJWT}>Login JWT</button>
-                            <div style={{ display: "flex" }}>
-                                <input 
-                                    placeholder="API Key" 
-                                    value={apiKeyInput} 
-                                    onChange={(e) => setApiKeyInput(e.target.value)} 
-                                    style={{ width: "100px" }}
-                                />
-                                <button onClick={handleLoginApiKey}>Login API</button>
-                            </div>
-                        </>
-                    ) : (
-                        <button onClick={handleLogout}>Logout</button>
+                <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    {!isAuth ? (
+                            <>
+                                <button onClick={handleLoginJWT}>Login JWT</button>
+                                <div style={{ display: "flex" }}>
+                                    <input 
+                                        placeholder="API Key" 
+                                        value={apiKeyInput} 
+                                        onChange={(e) => setApiKeyInput(e.target.value)} 
+                                        style={{ width: "100px" }}
+                                    />
+                                    <button onClick={handleLoginApiKey}>Login API</button>
+                                </div>
+                            </>
+                        ) : (
+                            <button onClick={handleLogout}>Logout</button>
                     )}
+                </div>
             </div>
-        </div>
 
-    )
+            {isAuth && (
+                <div style={{ marginBottom: "20px" }}>
+                    <h3 style={{ margin: "0 0 5px 0" }}>Account</h3>
+                    <div>Balance: ${balance.toFixed(2)}</div>
+                    <div style={{ marginTop: "5px" }}>Portfolio: 
+                        {Object.entries(portfolio).length === 0 ? " Empty" : 
+                            Object.entries(portfolio).map(([sym, amt]) => (
+                                <span key={sym} style={{ marginLeft: "10px", backgroundColor: "#e0e0e0", padding: "2px 5px", borderRadius: "3px" }}>
+                                    {sym}: {amt}
+                                </span>
+                            ))
+                        }
+                    </div>
+                </div>
+            )}
+
+            {isAuth && (
+                <div style={{ marginBottom: "20px", padding: "10px", border: "1px solid #ccc", backgroundColor: "white" }}>
+                    <h3 style={{ marginTop: 0 }}>Trade</h3>
+                    
+                    <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+                        <select value={symbol} onChange={(e) => setSymbol(e.target.value)}>
+                            <option value="AAA">AAA</option>
+                            <option value="BBB">BBB</option>
+                            <option value="CCC">CCC</option>
+                        </select>
+                        <input 
+                            type="number" 
+                            placeholder="Amount" 
+                            value={amount} 
+                            min="1"
+                            onChange={(e) => setAmount(e.target.value)} 
+                            style={{ width: "70px" }}
+                        />
+                    </div>
+
+                    <div style={{ marginBottom: "10px" }}>
+                        <button 
+                            onClick={() => handleMarketOrder("buy")} 
+                            style={{ backgroundColor: "#d4edda", marginRight: "10px", cursor: "pointer" }}
+                        >
+                            Market Buy
+                        </button>
+                        <button 
+                            onClick={() => handleMarketOrder("sell")}
+                            style={{ backgroundColor: "#f8d7da", cursor: "pointer" }}
+                        >
+                            Market Sell
+                        </button>
+                    </div>
+
+                    <div style={{ borderTop: "1px solid #eee", paddingTop: "10px" }}>
+                        <div style={{ marginBottom: "10px" }}>
+                            <input 
+                                type="number" 
+                                placeholder="Limit Price" 
+                                value={limitPrice} 
+                                onChange={(e) => setLimitPrice(e.target.value)} 
+                                style={{ width: "100px", marginRight: "10px" }}
+                            />
+                        </div>
+                        <button 
+                            onClick={() => handleLimitOrder("buy")}
+                            style={{ backgroundColor: "#c3e6cb", marginRight: "10px", cursor: "pointer" }}
+                        >
+                            Limit Buy
+                        </button>
+                        <button 
+                            onClick={() => handleLimitOrder("sell")}
+                            style={{ backgroundColor: "#f5c6cb", cursor: "pointer" }}
+                        >
+                            Limit Sell
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {isAuth && (
+                <div>
+                    <h3 style={{ marginTop: 0 }}>Active Limit Orders</h3>
+                    {activeOrders.length === 0 ? (
+                        <div style={{ color: "#eaeaea", fontSize: "0.9em" }}>No active orders</div>
+                    ) : (
+                        <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
+                            {activeOrders.map(order => (
+                                <li key={order.id} style={{ display: "flex", justifyContent: "space-between", alignItems:"center", marginBottom: "5px", backgroundColor: "#fff", padding: "5px", border: "1px solid #ddd", borderRadius: "3px" }}>
+                                    <span style={{fontSize: "0.9em"}}>
+                                        {order.orderType.toUpperCase()} {order.amount} {order.symbol} @ ${order.price}
+                                    </span>
+                                    <button 
+                                        onClick={() => handleCancelOrder(order.symbol, order.id)}
+                                        style={{ backgroundColor: "#dc3545", color: "white", border: "none", cursor: "pointer", borderRadius: "3px", padding: "2px 6px" }}
+                                    >
+                                        X
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
+        </div>
+    );
 }

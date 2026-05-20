@@ -212,6 +212,7 @@ ApiService.prototype.logout = logging('INFO')(ApiService.prototype.logout);
 ApiService.prototype.executeMarketOrder = logging('INFO')(ApiService.prototype.executeMarketOrder);
 ApiService.prototype.placeLimitOrder = logging('INFO')(ApiService.prototype.placeLimitOrder);
 ApiService.prototype.cancelLimitOrder = logging('INFO')(ApiService.prototype.cancelLimitOrder);
+ApiService.prototype.getActiveOrdersSync = logging('INFO')(ApiService.prototype.getActiveOrdersSync);
 
 ApiService.prototype.isAuthorized = logging('DEBUG')(ApiService.prototype.isAuthorized);
 ApiService.prototype.getMarketPrice = logging('DEBUG')(ApiService.prototype.getMarketPrice);
