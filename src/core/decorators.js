@@ -139,7 +139,7 @@ export function logging(logLevel = 'INFO')
                 const errorLogLevel = 'ERROR';
                 const errorMessage = `[${timestamp}] [${logLevel}] [${fnName}] Failed in ${timeTaken}ms with error: ${error.message}`;
 
-                emitAndAddLog({ timestamp, errorLogLevel, functionName: fnName, timeTaken, result: null, message: errorMessage });
+                emitAndAddLog({ timestamp, logLevel: errorLogLevel, functionName: fnName, timeTaken, result: null, message: errorMessage });
 
                 console.error(errorMessage);
                 throw error;

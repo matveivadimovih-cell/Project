@@ -50,7 +50,10 @@ export default function TradePanel()
 
     useEffect(() => {
         const currentPrice = market.getPrice(symbol);
-        if (currentPrice) setLimitPrice(currentPrice);
+        if (currentPrice) 
+        {
+            setLimitPrice(currentPrice);
+        }
     }, [symbol]);
 
     useEffect(() => {

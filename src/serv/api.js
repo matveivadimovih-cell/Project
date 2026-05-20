@@ -23,7 +23,7 @@ export class ApiService
             const { symbol, order } = data;
             const orderType = order.type === 'Bids' ? 'buy' : 'sell';
             this.activeOrders.set(order.id, { 
-                symbol, 
+                symbol,
                 price: order.price, 
                 amount: order.amount, 
                 orderType 
