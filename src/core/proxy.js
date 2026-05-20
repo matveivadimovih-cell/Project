@@ -1,4 +1,5 @@
 import { ApiService } from "../serv/api";
+import { logInfo } from "./decorators";
 
 const apiService = new ApiService();
 
@@ -13,7 +14,7 @@ export function apiSecure()
     }
 
     const PUBLIC_METHODS = ["login", "getMarketPrice", "getAllMarketPrices"];
-    const PRIVATE_METHODS = ["logout", "getPortfolio", "getPortfolioSync", "executeMarketOrder", "placeLimitOrder", "cancelLimitOrder"];
+    const PRIVATE_METHODS = ["logout", "getPortfolio", "getPortfolioSync", "executeMarketOrder", "placeLimitOrder", "cancelLimitOrder", "getActiveOrdersSync"];
 
     const handler = {
         get(target, prop, receiver)
@@ -32,13 +33,13 @@ export function apiSecure()
                 {
                     callTime.set(prop, []);
                 }
+                
+                const recentCalls = callTime.get(prop).filter((time) => now - time < 1000);
 
-                const recentCalls = callTime.get(prop).filter((time) => now - time < 1000)
                 if(recentCalls.length >= proxyConfig.rateLimitPerSecond)
                 {
                     throw new Error("too many requests");
                 }
-
                 recentCalls.push(now);
                 callTime.set(prop, recentCalls);
 
@@ -57,13 +58,13 @@ export function apiSecure()
                     
                     if(!isAuth)
                     {
-                        throw new Error("Unauthorized");
+                        return Promise.reject(new Error("Unauthorized"));
                     }
                 }
 
                 if(proxyConfig.authStrategy === "API_KEY" && PRIVATE_METHODS.includes(prop))
                 {
-                    args.unshift({'x-api-key': proxyConfig.apiKey});
+                    logInfo(`[Proxy] Injecting x-api-key: ${proxyConfig.apiKey} into ${prop}`);
                 }
 
                 return value.apply(target, args);

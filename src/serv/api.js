@@ -92,7 +92,7 @@ export class ApiService
     {
         return {
             balance: this.userBalance,
-            portfolio: this.userPortfolio
+            portfolio: new Map(this.userPortfolio)
         };
     }
 

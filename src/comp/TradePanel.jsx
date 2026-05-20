@@ -46,9 +46,27 @@ export default function TradePanel()
     }, []);
 
     useEffect(() => {
-        if(error) setTimeout(() => setError(""), 1000);
-        if(success) setTimeout(() => setSuccess(""), 1000);
-    }, [error, success])
+        const currentPrice = market.getPrice(symbol);
+        if (currentPrice) setLimitPrice(currentPrice);
+    }, [symbol]);
+
+    useEffect(() => {
+        let timerId;
+        if(error) 
+        {
+            timerId = setTimeout(() => setError(""), 1000);
+        }
+        return () => clearTimeout(timerId);
+    }, [error]);
+
+    useEffect(() => {
+        let timerId;
+        if(success) 
+        {
+            timerId = setTimeout(() => setSuccess(""), 1000);
+        }
+        return () => clearTimeout(timerId);
+    }, [success]);
 
     const handleLoginJWT = async () => {
         try
@@ -120,6 +138,7 @@ export default function TradePanel()
         catch(e)
         {
             setError(e.message);
+            if(e.message === "Unauthorized") setIsAuth(false); 
         }
     };
 
@@ -132,6 +151,7 @@ export default function TradePanel()
         } catch (e) 
         {
             setError(e.message);
+            if(e.message === "Unauthorized") setIsAuth(false); 
         }
     }
 
@@ -145,6 +165,7 @@ export default function TradePanel()
         } catch (e) 
         {
             setError(e.message);
+            if(e.message === "Unauthorized") setIsAuth(false); 
         }
     };
 
