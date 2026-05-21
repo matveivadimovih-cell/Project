@@ -9,9 +9,12 @@ export default function Dashboard()
     const [isRunning, setIsRunning] = useState(false);
 
     useEffect(() => {
-        await market.fetchAndInitStocks();
-        market.start(1000);
-        setIsRunning(true);
+        const initMarket = async () => {
+            await market.fetchAndInitStocks();
+            market.start(1000);
+            setIsRunning(true);
+        }
+        initMarket();
 
         return () => {
             market.stop();
