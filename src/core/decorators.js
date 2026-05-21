@@ -117,6 +117,8 @@ export function logging(logLevel = 'INFO')
                         emitAndAddLog({ timestamp, logLevel, functionName: fnName, timeTaken, result: null, message: errorMessage });
 
                         console.error(errorMessage);
+
+                        throw error;
                     });
                     return result;
                 }

@@ -39,6 +39,23 @@ class Market
         }
     }
 
+    async fetchAndInitStocks()
+    {
+        const stocksFromDB = [
+            { symbol: "AAA", initPrice: 150, options: { volatility: 0.05 } },
+            { symbol: "BBB", initPrice: 2800, options: { volatility: 0.01 } },
+            { symbol: "CCC", initPrice: 3400, options: { volatility: 0.001 } }
+        ];
+
+        const results = await asyncMap(stocksFromDB, async (stock) => {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            this.addStock(stock.symbol, stock.initPrice, stock.options);
+            return stock.symbol;
+        });
+
+        logInfo(`Init with ${results.filter(r => r.status !== 'error').join(', ')}`);
+    }
+
     addStock(symbol, initPrice, options = {})
     {
         if(this.intervals.has(symbol))
