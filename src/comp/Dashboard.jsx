@@ -10,7 +10,6 @@ export default function Dashboard()
 
     useEffect(() => {
         const initMarket = async () => {
-            await market.fetchAndInitStocks();
             market.start(1000);
             setIsRunning(true);
         }
