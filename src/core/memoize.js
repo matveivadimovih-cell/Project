@@ -37,3 +37,50 @@ export function memo(fn, maxSize = 500, evict = null)
         return res;
     }
 }
+
+function evictLRU(cache)
+{
+    const firstKey = cache.keys().next().value;
+    cache.delete(firstKey);
+}
+
+function evictLFU(cache)
+{
+    let minCount = Infinity;
+    let minKey = 0;
+    for(const [key, entry] of cache.entries())
+    {
+        if(entry.count < minCount)
+        {
+            minCount = entry.count;
+            minKey = key;
+        }
+    }
+    if(minKey !== null) cache.delete(minKey);
+}
+
+function evictMaxTime(MaxTime)
+{
+    return function(cache)
+    {
+        const timeNow = Date.now();
+        for(const [key, entry] of cache.entries())
+        {
+            if(timeNow - entry.createTime >= MaxTime)
+            {
+                cache.delete(key);
+            }
+        } 
+    }
+}
+
+function evictUser(cache)
+{
+    let count = 0;
+    for(let key of cache.keys())
+    {
+        if(count >= 3) break;
+        cache.delete(key);
+        count++;
+    }
+}
